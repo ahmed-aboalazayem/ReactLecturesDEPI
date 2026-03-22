@@ -1,0 +1,71 @@
+# Lecture Hub Dashboard: Program Flow & Overview
+
+## 1. Introduction
+The **Lecture Hub Dashboard** is a modern, responsive React web application designed to help users track and manage their learning progress across various lectures. It features a space-inspired "Glassmorphism" dark theme with dynamic scroll animations and robust internationalization (RTL) support for Arabic content.
+
+---
+
+## 2. Technology Stack
+*   **Core Framework**: React (v18) built with Vite for optimal performance and hot-reloading.
+*   **Routing**: `react-router` for seamless SPA (Single Page Application) navigation.
+*   **Styling**: 
+    *   **Tailwind CSS (v4)**: Utility-first CSS framework used for all layout, spacing, and typography needs.
+    *   **Custom CSS Variables**: Managed in `src/styles/theme.css` to govern the deep-space dark theme, vibrant red `#FF2E42` primary accents, and custom scrolling bars.
+*   **Animations**: `motion/react` (Framer Motion) powers smooth entrance, scroll, and layout animations across all cards and page transitions.
+*   **Icons**: `lucide-react` for crisp, scalable SVG icons.
+*   **Markdown Parsing**: 
+    *   `react-markdown` and `remark-gfm` to render rich lecture content.
+    *   `react-syntax-highlighter` to provide VS Code-style formatting to code snippets in lessons.
+    *   `mermaid` to render complex charts and graphs directly inside markdown strings.
+*   **State Management**: React Hooks (`useState`, `useEffect`) grouped with a custom `useLocalStorage` hook to persist user data (completed lectures and personal notes) directly to the browser.
+
+---
+
+## 3. Application Structure
+
+### `src/app/App.tsx` (Entry Point)
+This is the heart of the application. It establishes the `BrowserRouter`, wraps the app in the global theme, and mounts the shared `<Header>` and `<Footer>` components.
+It also initializes the core state using the `useLocalStorage` hook:
+*   `completedLectures`: An array of text IDs tracking which lessons the user has checked off.
+*   `lectureNotes`: An object dictionary mapping lecture IDs to the user's personal typed notes.
+*   `isDark`: A boolean tracking the color theme preference (defaults to true/dark mode).
+
+### `src/pages/Dashboard.jsx` (Home Route: `/`)
+The main landing page. 
+*   **Features:**
+    *   **Search & Filter**: Allows users to filter lectures by matching text (Title or Summary) and by specific category tags.
+    *   **Grid Layout**: Maps over the filtered `lectures.js` array and renders a responsive grid of `<LectureCard>` components using tailwind classes (`grid-cols-1 md:grid-cols-2 lg:grid-cols-4`).
+    *   **Empty State**: Shows a styled "No lectures found" message if search yields zero results.
+
+### `src/pages/LecturePage.jsx` (Detail Route: `/lecture/:id`)
+The detail view for a specific lesson.
+*   **Content Rendering**: Parses the lecture's `content` string into formatted HTML using `react-markdown`.
+*   **Mermaid Integation**: Iterates over Markdown code blocks. If a block is tagged as `mermaid`, it uses a custom `<MermaidChart />` wrapper to correctly invoke the external library to draw the SVG diagram.
+*   **Language Support (RTL)**: Reads the `lecture.language` property. If Arabic (`ar`), it sets the `dir="rtl"` attribute so the layout, including text alignment and the "Your Notes" textarea, gracefully flips to Right-to-Left formatting.
+*   **Notes System**: Includes a bound textarea that automatically saves the user's typed notes for this specific lecture ID into the browser's local storage.
+
+### `src/components/LectureCard.jsx`
+A reusable UI component that displays the snapshot of a lecture on the dashboard.
+*   **Design**: Implements strong Glassmorphism (`backdrop-blur-xl bg-card/60`) to allow the space background to peek through. 
+*   **Badges**: Dynamically calculates and renders a numerical ranking badge at the top rim.
+*   **Checkbox Integration**: Communicates with the top-level `App.tsx` state to mark a class as "Completed," wrapping the card in a glowing red accent border when checked.
+
+### `src/components/Footer.jsx`
+A simple, accessible footer anchored at the bottom of the page. Contains social links wrapped in anchor tags equipped with title tooltips (`title="..."`) for better UX.
+
+### `src/data/lectures.js`
+A static JavaScript array acting as a mock database. Each lecture object requires:
+*   `id`
+*   `title`
+*   `summary`
+*   `tags` (Array)
+*   `language` ('en' or 'ar')
+*   `content` (Markdown string containing the lesson)
+
+---
+
+## 4. Design & Theme Logic
+The application utilizes a rich "Deep Space" visual motif explicitly customized in `src/styles/theme.css`.
+*   The `.dark` class is applied to the root HTML body.
+*   The UI relies heavily on semi-transparent backgrounds (`bg-card/60`) paired with backdrop filters (`backdrop-blur-xl`) to achieve a modern, layered appearance without overwhelming the user.
+*   The primary interaction color (`var(--primary)`) acts as a unifying accent across checkboxes, buttons, text selections (`::selection`), and even extending deeply into the browser's scrollbar (`::-webkit-scrollbar-thumb`).
